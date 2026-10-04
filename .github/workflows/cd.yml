@@ -20,12 +20,15 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Incrementar la version en el README
+            - name: Incrementar la version en el README
         run: |
           FECHA=$(date '+%Y-%m-%d %H:%M:%S')
-          ACTUAL=$(grep -oP 'AppVersion-\K[0-9]+' README.md | head -1)
+          ACTUAL=$(grep -oE 'AppVersion-[0-9]+' README.md | head -1 | cut -d- -f2)
+          if [ -z "$ACTUAL" ]; then ACTUAL=0; fi
           NUEVA=$((ACTUAL + 1))
-          sed -i "s/AppVersion-$ACTUAL.*/AppVersion-$NUEVA ($FECHA)/" README.md
+          echo "Version actual: $ACTUAL -> nueva: $NUEVA"
+          sed -i -E "s/^AppVersion-[0-9]+.*$/AppVersion-$NUEVA ($FECHA)/" README.md
+          cat README.md
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
