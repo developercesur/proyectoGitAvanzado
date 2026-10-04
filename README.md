@@ -1,4 +1,4 @@
 # proyectoGitAvanzado
 
-AppVersion-2 (2026-10-04 11:12:41)
+AppVersion-3 (2026-10-04 11:14:00)
 Anadida feature: developAnadida feature: develop
