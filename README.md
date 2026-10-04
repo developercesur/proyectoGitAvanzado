@@ -1,3 +1,3 @@
 # proyectoGitAvanzado
 
-AppVersion-0
+AppVersion-1 (2026-10-04 10:59:37)
