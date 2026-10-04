@@ -20,7 +20,7 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
-            - name: Incrementar la version en el README
+      - name: Incrementar la version en el README
         run: |
           FECHA=$(date '+%Y-%m-%d %H:%M:%S')
           ACTUAL=$(grep -oE 'AppVersion-[0-9]+' README.md | head -1 | cut -d- -f2)
