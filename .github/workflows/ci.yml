@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Anadir la linea de feature al README
+        run: |
+          RAMA="${{ github.head_ref || github.ref_name }}"
+          echo "Anadida feature: $RAMA" >> README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "CI: anadir feature $RAMA al README" || echo "Sin cambios que confirmar"
+          git push
+
+  validate-dev:
+    needs: update-readme
+    runs-on: self-hosted
+    steps:
+      - name: Validar DEV_TOKEN contra LOCAL_DEV_TOKEN
+        env:
+          TOKEN: ${{ secrets.DEV_TOKEN }}
+        run: |
+          if ($env:TOKEN -eq $env:LOCAL_DEV_TOKEN) {
+            Write-Host "Coinciden"
+          } else {
+            Write-Host "No coinciden"
+            exit 1
+          }

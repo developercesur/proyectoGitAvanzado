@@ -1,0 +1,48 @@
+name: CD
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Incrementar la version en el README
+        run: |
+          FECHA=$(date '+%Y-%m-%d %H:%M:%S')
+          ACTUAL=$(grep -oP 'AppVersion-\K[0-9]+' README.md | head -1)
+          NUEVA=$((ACTUAL + 1))
+          sed -i "s/AppVersion-$ACTUAL.*/AppVersion-$NUEVA ($FECHA)/" README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "CD: version AppVersion-$NUEVA" || echo "Sin cambios que confirmar"
+          git push
+
+  validate-prod:
+    needs: bump-version
+    runs-on: self-hosted
+    steps:
+      - name: Validar PROD_TOKEN contra LOCAL_PROD_TOKEN
+        env:
+          TOKEN: ${{ secrets.PROD_TOKEN }}
+        run: |
+          if ($env:TOKEN -eq $env:LOCAL_PROD_TOKEN) {
+            Write-Host "Coinciden"
+          } else {
+            Write-Host "No coinciden"
+            exit 1
+          }
